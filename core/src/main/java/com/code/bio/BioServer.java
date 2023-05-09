@@ -19,6 +19,7 @@ public class BioServer {
                 new LinkedBlockingQueue<Runnable>(),
                 new ThreadFactory() {
                     AtomicInteger atomic = new AtomicInteger();
+
                     public Thread newThread(Runnable r) {
                         return new Thread(r, "BioServer-pool-" + this.atomic.getAndIncrement());
                     }
@@ -26,11 +27,11 @@ public class BioServer {
     }
 
     public void start() {
-        StaticLog.info("BioServer Start !!!");
+        StaticLog.info("[{}] BioServer Start !!!", Thread.currentThread().getName());
         try {
             //启动服务 监听端口
             ServerSocket serverSocket = new ServerSocket(port);
-            StaticLog.info("Listening port={}", port);
+            StaticLog.info("[{}] Listening port={}", Thread.currentThread().getName(), port);
             while (true) {
                 //阻塞等待连接
                 Socket accept = serverSocket.accept();

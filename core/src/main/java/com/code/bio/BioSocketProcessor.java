@@ -17,6 +17,6 @@ public class BioSocketProcessor implements Runnable {
     }
 
     private void processorSocket(Socket socket) {
-        StaticLog.info("thread name ={} processorSocket", Thread.currentThread().getName());
+        StaticLog.info("[{}] processorSocket", Thread.currentThread().getName());
     }
 }

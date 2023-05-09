@@ -9,8 +9,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class BioServer {
-    private int port;
-    private Executor executor;
+    private final int port;
+    private final Executor executor;
 
     public BioServer(int port) {
         this.port = port;
@@ -18,7 +18,7 @@ public class BioServer {
                 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<Runnable>(),
                 new ThreadFactory() {
-                    AtomicInteger atomic = new AtomicInteger();
+                    final AtomicInteger atomic = new AtomicInteger();
 
                     public Thread newThread(Runnable r) {
                         return new Thread(r, "BioServer-pool-" + this.atomic.getAndIncrement());

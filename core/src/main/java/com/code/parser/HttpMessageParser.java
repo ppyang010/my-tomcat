@@ -10,7 +10,7 @@ import java.util.Map;
 
 /**
  * http协议解析器
- *
+ * <p>
  * https://github.com/liuyueyi/quick-fix/blob/master/core/src/main/java/com/github/liuyueyi/fix/core/endpoint/HttpMessageParser.java
  * Created by @author yihui in 11:35 18/12/30.
  */
@@ -39,6 +39,17 @@ public class HttpMessageParser {
          * 请求参数相关
          */
         private String message;
+
+
+        /**
+         * 从headers中获取host
+         */
+        private String host;
+
+        public String getHost() {
+            return headers.getOrDefault("host", "");
+        }
+
 
         public String getMethod() {
             return method;
@@ -133,12 +144,12 @@ public class HttpMessageParser {
 
     /**
      * http的请求可以分为三部分
-     *
+     * <p>
      * 第一行为请求行: 即 方法 + URI + 版本
      * 第二部分到一个空行为止，表示请求头
      * 空行
      * 第三部分为接下来所有的，表示发送的内容,message-body；其长度由请求头中的 Content-Length 决定
-     *
+     * <p>
      * 几个实例如下
      *
      * @param reqStream
@@ -179,8 +190,10 @@ public class HttpMessageParser {
         String line = reader.readLine();
         String[] kv;
         while (!"".equals(line)) {
-            kv = StrUtil.splitToArray(line, ":");
-            assert kv.length == 2;
+            //根据 ':' 进行支付串分片 限制分片后的数组长度=2
+            //限制长度=2的目的是处理这个 Host: localhost:8000
+            kv = StrUtil.splitToArray(line, ':', 2);
+//            assert kv.length == 2 : "kv数组长度不对";
             headers.put(kv[0].trim().toLowerCase(), kv[1].trim());
             line = reader.readLine();
         }
@@ -245,6 +258,25 @@ public class HttpMessageParser {
         buildResponseHeaders(httpResponse, builder);
         buildResponseMessage(httpResponse, builder);
         return builder.toString();
+    }
+
+
+    /**
+     * 创建一个成功的response对象 内容为空
+     * @param request
+     * @return
+     */
+    public static Response buildSuccessResponse(Request request) {
+        Response httpResponse = new Response();
+        httpResponse.setCode(200);
+        httpResponse.setStatus("ok");
+        httpResponse.setVersion(request.getVersion());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        httpResponse.setHeaders(headers);
+
+        return httpResponse;
     }
 
 

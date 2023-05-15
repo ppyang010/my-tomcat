@@ -2,6 +2,9 @@ package com.code.servlet;
 
 import com.code.parser.HttpMessageParser;
 
+/**
+ * 按照servlet规范实现Request和Response
+ */
 public class StandardHttpServletRequest extends AbstractHttpServletRequest{
 
     private HttpMessageParser.Request request;

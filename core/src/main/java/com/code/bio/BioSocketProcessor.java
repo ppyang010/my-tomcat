@@ -33,10 +33,10 @@ public class BioSocketProcessor implements Runnable {
             //todo 匹配servlet doService
             // 模拟将请求数据分发给servlet
             DemoServlet servlet = new DemoServlet();
-            // 返回数据方式2:返回数据由servlet返回
+            // 在servlet中处理逻辑并写入响应体
             servlet.service(new StandardHttpServletRequest(request),new StandardHttpServletResponse(response));
 
-//            // 返回数据方式1:直接返回数据给请求方
+//            // 组装完成的响应消息返回给客户端 包括(响应行 响应头 响应体)
 //            OutputStream outputStream = socket.getOutputStream();
 //            PrintWriter out = new PrintWriter(outputStream);
 //            String responseStr = HttpMessageParser.buildResponse(request, "hello ccy");

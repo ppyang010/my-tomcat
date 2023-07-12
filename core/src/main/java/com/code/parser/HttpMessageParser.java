@@ -260,9 +260,33 @@ public class HttpMessageParser {
         return builder.toString();
     }
 
+    public static String completeResponseStr(Response httpResponse, byte[] bodyBytes) {
+        if (bodyBytes == null) {
+            bodyBytes = new byte[0];
+        }
+        try {
+            String bodyMessage = new String(bodyBytes, "utf-8");
+            httpResponse.setMessage(bodyMessage);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+        Map<String, String> headers = new HashMap<>();
+        headers.put("Content-Type", "application/json");
+        headers.put("Content-Length", String.valueOf(bodyBytes.length));
+        httpResponse.setHeaders(headers);
+
+
+        StringBuilder builder = new StringBuilder();
+        buildResponseLine(httpResponse, builder);
+        buildResponseHeaders(httpResponse, builder);
+        buildResponseMessage(httpResponse, builder);
+        return builder.toString();
+    }
+
 
     /**
      * 创建一个成功的response对象 内容为空
+     *
      * @param request
      * @return
      */

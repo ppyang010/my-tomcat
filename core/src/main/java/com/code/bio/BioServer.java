@@ -1,6 +1,7 @@
 package com.code.bio;
 
 import cn.hutool.log.StaticLog;
+import com.code.context.Context;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -12,7 +13,9 @@ public class BioServer {
     private final int port;
     private final Executor executor;
 
-    public BioServer(int port) {
+    private final Context context;
+
+    public BioServer(int port,Context context) {
         this.port = port;
         this.executor = new ThreadPoolExecutor(10, 10,
                 0L, TimeUnit.MILLISECONDS,
@@ -24,9 +27,14 @@ public class BioServer {
                         return new Thread(r, "BioServer-pool-" + this.atomic.getAndIncrement());
                     }
                 });
+        this.context = context;
     }
 
     public void start() {
+        //step1
+        deployApps(context);
+
+        //step2
         StaticLog.info("[{}] BioServer Start !!!", Thread.currentThread().getName());
         try {
             //启动服务 监听端口
@@ -40,5 +48,10 @@ public class BioServer {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private void deployApps(Context context){
+        System.out.println(System.getProperty("user.dir"));
+
     }
 }

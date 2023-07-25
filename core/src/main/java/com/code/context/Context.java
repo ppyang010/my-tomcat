@@ -34,10 +34,18 @@ public class Context {
         this.docBase = docBase;
     }
 
-    public void addUriPatternServletMap(String urlPattern, Servlet servlet){
-        urlPatternMap. put( urlPattern, servlet);
+    public void addUriPatternServletMap(String urlPattern, Servlet servlet) {
+        urlPatternMap.put(urlPattern, servlet);
     }
 
+    public Servlet getByUrlPattern(String urlPattern){
+        for (String p : urlPatternMap.keySet()) {
+            if (p.equals(urlPattern)) {
+                return urlPatternMap.get(p);
+            }
+        }
+        return null;
+    }
 
     public String getName() {
         return name;

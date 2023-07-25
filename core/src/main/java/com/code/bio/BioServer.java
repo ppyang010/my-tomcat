@@ -4,6 +4,9 @@ import cn.hutool.log.StaticLog;
 import com.code.classloader.WebAppClassLoader;
 import com.code.context.Context;
 
+import javax.servlet.Servlet;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -11,6 +14,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -49,7 +53,7 @@ public class BioServer {
             while (true) {
                 //阻塞等待连接
                 Socket accept = serverSocket.accept();
-                executor.execute(new BioSocketProcessor(accept));
+                executor.execute(new BioSocketProcessor(accept, context));
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -62,7 +66,8 @@ public class BioServer {
      * @param context
      */
     private void deployApps(Context context) {
-        System.out.println(System.getProperty("user.dir"));
+        StaticLog.info("[{}] deployApps start !!!", Thread.currentThread().getName());
+        StaticLog.info("[{}] user.dir={}", Thread.currentThread().getName(), System.getProperty("user.dir"));
         File docBase = new File(context.getDocBase());
         //classes目录
         File classesDirectory = new File(docBase, "/WEB-INF/classes");
@@ -72,13 +77,14 @@ public class BioServer {
         List<String> clazzNameList = new ArrayList<>();
         for (File clazz : allClassFileList) {
             String clazzName = clazz.getPath();
+            //过滤非class文件
             if (!clazzName.contains(".class")) {
                 continue;
             }
             clazzName = clazzName.replace(classesDirectory.getPath() + "\\", "");
             clazzName = clazzName.replace(".class", "");
             clazzName = clazzName.replace("\\", ".");
-            System.out.println(clazzName);
+//            System.out.println(clazzName);
 
             clazzNameList.add(clazzName);
         }
@@ -88,14 +94,29 @@ public class BioServer {
             for (String clazzName : clazzNameList) {
                 Class<?> servletClass = webAppClassLoader.loadClass(clazzName);
                 System.out.println(servletClass);
+                //判断这个类是不是一个servlet了，如果是就解析WebServlet注解得到对应的urlPatterns
+                if (HttpServlet.class.isAssignableFrom(servletClass)) {
+                    if (servletClass.isAnnotationPresent(WebServlet.class)) {
+                        WebServlet webServlet = servletClass.getAnnotation(WebServlet.class);
+                        //优先取urlPatterns的值 如果为空再取value的值
+                        String[] urlPatterns = webServlet.urlPatterns();
+                        if (null == urlPatterns || urlPatterns.length == 0) {
+                            urlPatterns = webServlet.value();
+                        }
 
+                        if (null != urlPatterns && urlPatterns.length > 0) {
+                            List<String> urlPatternList = Arrays.asList(urlPatterns);
+                            for (String urlPattern : urlPatternList) {
+                                StaticLog.info("[{}] addUriPatternServletMap urlPattern={} class={}", Thread.currentThread().getName(), urlPattern, servletClass);
+                                context.addUriPatternServletMap(urlPattern, (Servlet) servletClass.newInstance());
+                            }
+                        }
+                    }
+                }
             }
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
 
 
     }

@@ -60,13 +60,13 @@ public class StandardHttpServletResponse extends AbstractHttpServletResponse {
 
             PrintWriter out = new PrintWriter(outputStream);
             out.print(responseStr);
+            // 刷新输出流，确保响应消息被发送
             out.flush();
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        // 刷新输出流，确保响应消息被发送
     }
 
 }

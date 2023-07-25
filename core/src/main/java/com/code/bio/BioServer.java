@@ -3,9 +3,12 @@ package com.code.bio;
 import cn.hutool.log.StaticLog;
 import com.code.context.Context;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -50,8 +53,32 @@ public class BioServer {
         }
     }
 
+    /**
+     * todo 可以考虑解耦
+     * @param context
+     */
     private void deployApps(Context context){
         System.out.println(System.getProperty("user.dir"));
+        File docBase = new File(context.getDocBase());
+        //classes目录
+        File classesDirectory = new File(docBase, "/WEB-INF/classes");
+    }
+
+    public List<File> getAllFilePath(File srcFile) {
+        List<File> result = new ArrayList<File>();
+        File[] files = srcFile.listFiles();
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    result.addAll(getAllFilePath(file));
+                } else {
+                    result.add(file);
+                }
+            }
+        }
+
+        return result;
 
     }
 }

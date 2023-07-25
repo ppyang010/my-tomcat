@@ -39,4 +39,30 @@ public class Context {
     }
 
 
+    public String getName() {
+        return name;
+    }
+
+    public Context setName(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public Context setPath(String path) {
+        this.path = path;
+        return this;
+    }
+
+    public String getDocBase() {
+        return docBase;
+    }
+
+    public Context setDocBase(String docBase) {
+        this.docBase = docBase;
+        return this;
+    }
 }

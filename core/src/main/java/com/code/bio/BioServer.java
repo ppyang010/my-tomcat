@@ -1,12 +1,15 @@
 package com.code.bio;
 
 import cn.hutool.log.StaticLog;
+import com.code.classloader.WebAppClassLoader;
 import com.code.context.Context;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -18,7 +21,7 @@ public class BioServer {
 
     private final Context context;
 
-    public BioServer(int port,Context context) {
+    public BioServer(int port, Context context) {
         this.port = port;
         this.executor = new ThreadPoolExecutor(10, 10,
                 0L, TimeUnit.MILLISECONDS,
@@ -55,13 +58,46 @@ public class BioServer {
 
     /**
      * todo 可以考虑解耦
+     *
      * @param context
      */
-    private void deployApps(Context context){
+    private void deployApps(Context context) {
         System.out.println(System.getProperty("user.dir"));
         File docBase = new File(context.getDocBase());
         //classes目录
         File classesDirectory = new File(docBase, "/WEB-INF/classes");
+        // 拿到该目录下的所有class文件
+        List<File> allClassFileList = getAllFilePath(classesDirectory);
+
+        List<String> clazzNameList = new ArrayList<>();
+        for (File clazz : allClassFileList) {
+            String clazzName = clazz.getPath();
+            if (!clazzName.contains(".class")) {
+                continue;
+            }
+            clazzName = clazzName.replace(classesDirectory.getPath() + "\\", "");
+            clazzName = clazzName.replace(".class", "");
+            clazzName = clazzName.replace("\\", ".");
+            System.out.println(clazzName);
+
+            clazzNameList.add(clazzName);
+        }
+
+        try {
+            WebAppClassLoader webAppClassLoader = new WebAppClassLoader(new URL[]{classesDirectory.toURL()});
+            for (String clazzName : clazzNameList) {
+                Class<?> servletClass = webAppClassLoader.loadClass(clazzName);
+                System.out.println(servletClass);
+
+            }
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+
+
     }
 
     public List<File> getAllFilePath(File srcFile) {

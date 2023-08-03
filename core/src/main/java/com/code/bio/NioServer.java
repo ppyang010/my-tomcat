@@ -50,7 +50,7 @@ public class NioServer {
                     //因为之前把服务端channel注册到selector上时，同时把serverSocketChannel放进去了
                     ServerSocketChannel channel = (ServerSocketChannel)key.channel();
                     //ServerSocketChannel attachment = (ServerSocketChannel)key.attachment();
-                    //得到客户端的channel
+                    //得到客户端的channel ps:可以理解为 通讯端channel 类似socket类，这个Socket如果是从ServerSocket拿到的对象，那就是与服务器连接的那个Socket，如果是自己创建的Socket对象，那你就是客户端。
                     SocketChannel socketChannel = channel.accept();
                     socketChannel.configureBlocking(false);
                     //接下来就要管理客户端的channel了，和服务端的channel的做法相同，客户端的channel也应该被注册到selector上
